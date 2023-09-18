@@ -193,15 +193,15 @@ vonal endp
 
 read_decimal proc
 
-	push AX	    ; AX regisztert elmentjÅk
+	push AX	    ; AX regisztert elmentj√ºk
 	push BX
 	push DX
 	mov BX,10
-	XOR AX,AX	    ; null†zzuk tartalm†t
+	XOR AX,AX	    ; null√°zzuk tartalm√°t
      r_d_new:
 	call read_char
 	CMP DL,CR
-	JE r_d_end	    ; ha egyenlã
+	JE r_d_end	    ; ha egyenl≈ë
 	SUB DL,'0'
 	MUL BL
 	ADD AL,DL
