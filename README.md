@@ -13,6 +13,13 @@ Az elméleti dolgozatban szereplő tételek itt megtalálhatóak.
 ## Fájlnév
 A DOS-ban a fájlnév maximális hossza 8 karakter + 3 karakter a kiterjesztésnek, egyéb esetben nem fut le a program a DOSBOX-ban.
 
+## MASM futattása VSCODE-ban
+Telepíteni kell ezeket az bővitményeket:
+- MASM/TASM
+- VSCode DOSBox
+
+és a kódban jobb kattintás után **Run ASM code**
+
 ## Karaktertábla
 [ASCII tábla a feladatokhoz](https://www.asciitable.com/)
 
