@@ -4,7 +4,7 @@
 
 .CODE           ; Kódszegmens
 
-MOV AH, 1       ; AH=1 akkor stdin
+MOV AH, 1       ; AH=1 akkor stdin (Ha AH=8 akkor nincs echo)
 INT 21h         ; Karakter bekérése és elmentése AL-be
 
 MOV DL, AL      ; AL-ben lévő karakter áthelyezése DL-be
