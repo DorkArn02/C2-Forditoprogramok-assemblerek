@@ -57,11 +57,13 @@ write_hexa PROC
                      RET
 write_hexa ENDP
     
+    ; Egy hexa digit kiíratása
 write_hexa_digit PROC
                      PUSH DX
                      CMP  DL, 10              ; DL összehasonlítása 10-zel
                      JB   non_hexa_letter     ; Ugrás, ha kisebb mint 10
-                     ADD  DL, "A"-"0"-10      ; A-F betű kiírása
+    ; ADD  DL, "A"-"0"-10      ; A-F betű kiírása
+                     ADD  DL, 7               ; Ugyanaz, mint a fenti
     non_hexa_letter: 
                      ADD  DL, "0"             ; ASCII kód megadása
                      CALL write_char
