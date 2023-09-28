@@ -4,7 +4,7 @@
     txt        DB  "Hello World$"
     txt_length EQU $ - txt
 .CODE
-
+    ; Írjon ki egy tetszőleges (konstans) szöveget visszafelé.
 main PROC
                   MOV  AX, DGROUP
                   MOV  DS, AX

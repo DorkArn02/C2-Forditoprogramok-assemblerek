@@ -1,10 +1,10 @@
 .MODEL SMALL
 .STACK
 .DATA
-    adat_1 DB "Elso sor",0
+    adat_1 DB "forditoprogramok",0
     adat_2 DB "Masodik sor",0
 .CODE
-
+    ; Írja ki egy tetszőleges (konstans) szöveg páratlan számú karaktereit.
 main PROC
                   CALL cls
                   MOV  AX, DGROUP
@@ -29,7 +29,6 @@ write_char ENDP
 write_string PROC
                   PUSH DX
                   PUSH BX
-                  INC  BX
     write_str_new:
                   MOV  DL, [BX]
                   OR   DL, DL

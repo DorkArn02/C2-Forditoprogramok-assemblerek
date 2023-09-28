@@ -4,7 +4,7 @@
     adat_1 DB "ez egy tordelt mondat",0
     adat_2 DB "Masodik sor",0
 .CODE
-
+    ; Írjon ki egy tetszőleges (konstans) szöveget úgy, hogy minden szót külön sorba ír.
 main PROC
                   CALL cls
                   MOV  AX, DGROUP
@@ -34,11 +34,12 @@ write_string PROC
                   OR   DL, DL
                   JZ   write_str_end
                   CMP  DL, ' '
-                  JE   skip             ; Ha szóköz, akkor kihagyjuk
+                  JE   skip             ; Ha szóköz, akkor újsor
                   CALL write_char
                   INC  BX
                   JMP  write_str_new
     skip:         
+                  CALL cr_lf
                   INC  BX
                   JMP  write_str_new
     write_str_end:

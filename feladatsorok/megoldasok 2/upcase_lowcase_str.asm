@@ -4,7 +4,7 @@
     msg1 DB "Adjon meg egy szoveget:$"
     txt  DB 100 DUP (?)                   ; Futás közben feltöltődő memória terület...
 .CODE
-    ; Nagybetűssé alakítja a bemenő szöveget
+    ; Írjon ki egy tetszőleges (konstans) szöveget úgy, hogy a kisbetű karaktereket nagybetűre alakítja.
 main PROC
                     CALL cls
                     MOV  AX, DGROUP         ; Adatszegmens beállítása

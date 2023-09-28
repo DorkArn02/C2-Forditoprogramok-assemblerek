@@ -1,10 +1,10 @@
 .MODEL SMALL
 .STACK
 .DATA
-    adat_1 DB "forditoprogramok",0
+    adat_1 DB "ez egy tordelt mondat",0
     adat_2 DB "Masodik sor",0
 .CODE
-
+    ; Írjon ki egy tetszőleges (konstans) szöveget úgy, hogy a szókőz karaktereket kihagyja.
 main PROC
                   CALL cls
                   MOV  AX, DGROUP
@@ -33,13 +33,12 @@ write_string PROC
                   MOV  DL, [BX]
                   OR   DL, DL
                   JZ   write_str_end
+                  CMP  DL, ' '
+                  JE   skip             ; Ha szóköz, akkor kihagyjuk
                   CALL write_char
-
                   INC  BX
-                  MOV  DL, [BX]
-                  OR   DL, DL
-                  JZ   write_str_end
-
+                  JMP  write_str_new
+    skip:         
                   INC  BX
                   JMP  write_str_new
     write_str_end:
