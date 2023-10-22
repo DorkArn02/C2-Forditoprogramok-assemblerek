@@ -1,16 +1,11 @@
 .MODEL SMALL
 .STACK
 .DATA?
-	kerdes db "Irj be egy meghajtosorszamot: ",0
-	block  db 512 DUP(?)
+	block db 512 DUP(?)
 .CODE
 main proc
 	                 mov  AX, dgroup
 	                 mov  DS, AX
-
-
-	                 lea  bx, kerdes
-	                 call write_string
 	                 call read_decimal
 
 	                 mov  AL, DL          	; meghajtó
