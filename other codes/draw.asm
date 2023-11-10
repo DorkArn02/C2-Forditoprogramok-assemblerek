@@ -1,22 +1,115 @@
 .MODEL SMALL
 .STACK
 .DATA?
-    ; Ide kerulnek a kezdeti ertek nelkuli valtozok
-    ; Pl: adat DB 10 DUP(?)
+    char  db 2 DUP(?)
 .DATA
-    ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
-    ; Pl: adat DB 'Hello World$'
+    x    db 1
+    y    db 1
+   
 .CODE
-
+    
 main proc
                        MOV  AX, DGROUP
                        MOV  DS, AX
+    ;CALL read_char
+                       MOV  char, 178
                        CALL cls
                        CALL set_videomode
+                                 
+                       CALL clear_screen
+                       MOV  x, 40
+                       MOV  y, 1
+    lpk1:              
+                       CALL draw_side
+                       CMP  x, 79
+                       JE   ex
+                       INC  x
+                       JMP  lpk1
+    ex:                
+                       MOV  x, 1
+                       MOV  y, 24
 
+    lpk2:              
+                       CALL draw_side
+                       CMP  x, 40
+                       JE   ex2
+                       INC  x
+                       JMP  lpk2
+    ex2:               
+                       MOV  x, 1
+                       MOV  y, 12
+    lp:                
+                       CALL draw_side
+                       CMP  x, 79
+                       JE   ex3
+                       INC  x
+                       JMP  LP
+    ex3:               
+                       MOV  x, 40
+                       MOV  y, 1
+    lp2:               
+                       CALL draw_side
+                       CMP  y, 24
+                       JE   ex4
+                       INC  y
+                       JMP  LP2
+    ex4:               
+                       MOV  x, 1
+                       MOV  y, 1
+    lp3:               
+                       CALL draw_side
+                       CMP  y, 12
+                       JE   ex5
+                       INC  y
+                       JMP  lp3
+    ex5:               
+                       MOV  x, 79
+                       MOV  y, 12
+    lp4:               
+                       CALL draw_side
+                       CMP  y, 24
+                       JE   exit
+                       INC  y
+                       JMP  lp4
+    exit:              
                        MOV  AH, 4Ch
                        INT  21h
 main endp
+
+draw_side PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX
+                       MOV  DL, y
+                       MOV  AL, DL
+                       DEC  AL                          ; y-1
+                       MOV  BL, 160
+                       MUL  BL                          ; (y-1)*160 Elso tag
+                       MOV  DI, AX                      ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX
+                       MOV  DL, x
+                       MOV  AL, DL
+                       DEC  AL                          ; x-1
+                       SHL  AL, 1                       ; 2(x-1) Masodik tag
+                       ADD  DI, AX                      ; DI = DI + AL
+
+                       MOV  AL, char                    ; Karakter az also 4 bithelyre
+                       MOV  AH, 128 * 0 + 16 * 0 + 4    ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX                 ; Kepernyo memoriara iras
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_side ENDP
+
 
 read_char PROC
                        PUSH AX
@@ -177,18 +270,6 @@ upcase proc
                        RET
 upcase endp
 
-lowcase proc
-                       CMP  DL, 'Z'
-                       JG   exitlower
-                       CMP  DL, 'A'
-                       JL   exitlower
-                       JGE  convertLower2
-    convertLower2:     
-                       ADD  DL, 'a'-'A'
-    exitlower:         
-                       RET
-lowcase endp
-
 read_binary proc
                        PUSH AX
                        XOR  AX, AX
@@ -302,12 +383,12 @@ clear_screen PROC
                        PUSH CX
                        PUSH DX
                        XOR  AL, AL
-                       XOR  CX, CX               ;Bal felso sarok (CL = 0, CH = 0)
-                       MOV  DH, 24               ;49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
-                       MOV  DL, 79               ;Jobb oldali oszlop sorszama
-                       MOV  BH, 7                ;Torolt helyek attributuma
-                       MOV  AH, 6                ;Sorgorgetes felfele (Scroll-up) funkcio
-                       INT  10h                  ;Kepernyo torlese
+                       XOR  CX, CX                      ;Bal felso sarok (CL = 0, CH = 0)
+                       MOV  DH, 24                      ;49                      ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
+                       MOV  DL, 79                      ;Jobb oldali oszlop sorszama
+                       MOV  BH, 16*15                   ;Torolt helyek attributuma
+                       MOV  AH, 6                       ;Sorgorgetes felfele (Scroll-up) funkcio
+                       INT  10h                         ;Kepernyo torlese
                        POP  DX
                        POP  CX
                        POP  BX

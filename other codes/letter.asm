@@ -1,18 +1,17 @@
 .MODEL SMALL
 .STACK
-.DATA?
-    ; Ide kerulnek a kezdeti ertek nelkuli valtozok
-    ; Pl: adat DB 10 DUP(?)
 .DATA
-    ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
-    ; Pl: adat DB 'Hello World$'
+    adat db "HeLoWoRld world"
 .CODE
 
+    ; Kis -> nagy es nagy -> kis
 main proc
                        MOV  AX, DGROUP
                        MOV  DS, AX
                        CALL cls
-                       CALL set_videomode
+
+                       LEA  BX, adat
+                       CALL write_string
 
                        MOV  AH, 4Ch
                        INT  21h
@@ -177,18 +176,6 @@ upcase proc
                        RET
 upcase endp
 
-lowcase proc
-                       CMP  DL, 'Z'
-                       JG   exitlower
-                       CMP  DL, 'A'
-                       JL   exitlower
-                       JGE  convertLower2
-    convertLower2:     
-                       ADD  DL, 'a'-'A'
-    exitlower:         
-                       RET
-lowcase endp
-
 read_binary proc
                        PUSH AX
                        XOR  AX, AX
@@ -213,6 +200,19 @@ write_string PROC
                        MOV  DL, [BX]
                        OR   DL, DL
                        JZ   write_str_end
+                       CMP  DL, ' '
+                       JE   kiiras
+    ; Kisbetu -> nagybetu
+                       CMP  DL, 'a'
+                       JL   nagybetuMar
+                       CMP  DL, 'z'
+                       SUB  DL, 'a'-'A'
+                       JMP  kiiras
+    ; Nagybetu -> kisbetu
+    nagybetuMar:       
+                       ADD  DL, 'a'-'A'
+
+    kiiras:            
                        CALL write_char
                        INC  BX
                        JMP  write_str_new
@@ -297,21 +297,13 @@ toLowerCase PROC
 toLowerCase ENDP
 
 clear_screen PROC
-                       PUSH AX
-                       PUSH BX
-                       PUSH CX
-                       PUSH DX
                        XOR  AL, AL
                        XOR  CX, CX               ;Bal felso sarok (CL = 0, CH = 0)
-                       MOV  DH, 24               ;49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
+                       MOV  DH, 49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
                        MOV  DL, 79               ;Jobb oldali oszlop sorszama
                        MOV  BH, 7                ;Torolt helyek attributuma
                        MOV  AH, 6                ;Sorgorgetes felfele (Scroll-up) funkcio
                        INT  10h                  ;Kepernyo torlese
-                       POP  DX
-                       POP  CX
-                       POP  BX
-                       POP  AX
                        RET
 clear_screen ENDP
 

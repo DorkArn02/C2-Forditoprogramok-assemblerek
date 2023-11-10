@@ -6,6 +6,9 @@
 .DATA
     ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
     ; Pl: adat DB 'Hello World$'
+    x    DB 20
+    y    DB 24
+    attr DB 128 * 0 + 16 * 0 + 4
 .CODE
 
 main proc
@@ -14,9 +17,99 @@ main proc
                        CALL cls
                        CALL set_videomode
 
+    lp1:               
+                       CALL draw_side
+                       CMP  x, 60
+                       JE   ex1
+                       INC  x
+                       
+                       JMP  lp1
+    ex1:               
+                       MOV  attr, 128 * 0 + 16 * 0 + 5
+                       MOV  x, 20
+                       MOV  y, 24
+
+    lp2:               
+                       CALL draw_side
+                       CMP  y, 15
+                       JE   ex2
+                       DEC  y
+    lp3:               
+                       CALL draw_side
+                       CMP  x, 30
+                       JE   ex2
+                       INC  x
+                       JMP  lp2
+    ex2:               
+                       mov  x, 60
+                       mov  y, 24
+
+    lp4:               
+                       CALL draw_side
+                       CMP  y, 15
+                       JE   ex3
+                       DEC  y
+    lp5:               
+                       CALL draw_side
+                       CMP  x, 30
+                       JE   ex3
+                       DEC  x
+                       JMP  lp4
+    ex3:               
+                       mov  x, 30
+                       mov  y, 15
+    lp6:               
+                       CALL draw_side
+                       CMP  x, 50
+                       JE   ex4
+                       INC  x
+                       JMP  lp6
+    ex4:               
+
                        MOV  AH, 4Ch
                        INT  21h
 main endp
+
+draw_side PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX                        ; AX torlese
+                       MOV  DL, y
+    ;CALL read_decimal         ; y bekerese
+                       MOV  AL, DL
+                       DEC  AL                            ; y-1
+                       MOV  BL, 160
+                       MUL  BL                            ; (y-1)*160 Elso tag
+                       MOV  DI, AX                        ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX                        ; AX torlese
+                       MOV  DL, x
+    ;CALL read_decimal         ; x bekerese
+                       MOV  AL, DL
+                       DEC  AL                            ; x-1
+                       SHL  AL, 1                         ; 2(x-1) Masodik tag
+                       ADD  DI, AX                        ; DI = DI + AL
+
+    ;CALL read_char            ; Karakter beolvasasa
+                       MOV  AL, 178                       ; Karakter az also 4 bithelyre
+    ;CALL read_decimal         ; Attributum bekerese
+                       MOV  AH, attr                      ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX                   ; Kepernyo memoriara iras
+
+                       INC  CH
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_side ENDP
+
 
 read_char PROC
                        PUSH AX
@@ -302,12 +395,12 @@ clear_screen PROC
                        PUSH CX
                        PUSH DX
                        XOR  AL, AL
-                       XOR  CX, CX               ;Bal felso sarok (CL = 0, CH = 0)
-                       MOV  DH, 24               ;49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
-                       MOV  DL, 79               ;Jobb oldali oszlop sorszama
-                       MOV  BH, 7                ;Torolt helyek attributuma
-                       MOV  AH, 6                ;Sorgorgetes felfele (Scroll-up) funkcio
-                       INT  10h                  ;Kepernyo torlese
+                       XOR  CX, CX                        ;Bal felso sarok (CL = 0, CH = 0)
+                       MOV  DH, 24                        ;49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
+                       MOV  DL, 79                        ;Jobb oldali oszlop sorszama
+                       MOV  BH, 7                         ;Torolt helyek attributuma
+                       MOV  AH, 6                         ;Sorgorgetes felfele (Scroll-up) funkcio
+                       INT  10h                           ;Kepernyo torlese
                        POP  DX
                        POP  CX
                        POP  BX

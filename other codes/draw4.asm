@@ -6,6 +6,9 @@
 .DATA
     ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
     ; Pl: adat DB 'Hello World$'
+    x    DB 1
+    y    DB 0
+    attr DB 16
 .CODE
 
 main proc
@@ -13,10 +16,83 @@ main proc
                        MOV  DS, AX
                        CALL cls
                        CALL set_videomode
+    lp2:               
+                       CMP  y, 8
+                       JE   ex2
+                       MOV  x, 1
+                       INC  y
+    lp1:               
+                       CALL draw_side
+                       CMP  x, 79
+                       JE   lp2
+                       INC  x
+                       JMP  lp1
+    ex2:               
+                       MOV  attr, 32
+    lp4:               
+                       CMP  y, 16
+                       JE   ex3
+                       MOV  x, 1
+                       INC  y
+    lp3:               
+                       CALL draw_side
+                       CMP  x, 79
+                       JE   lp4
+                       INC  x
+                       JMP  lp3
+    ex3:               
+                       MOV  attr, 18
+    lp6:               
+                       CMP  y, 24
+                       JE   ex1
+                       MOV  x, 1
+                       INC  y
+    lp5:               
+                       CALL draw_side
+                       CMP  x, 79
+                       JE   lp6
+                       INC  x
+                       JMP  lp5
 
+
+    ex1:               
                        MOV  AH, 4Ch
                        INT  21h
 main endp
+
+draw_side PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX
+                       MOV  DL, y
+                       MOV  AL, DL
+                       DEC  AL                   ; y-1
+                       MOV  BL, 160
+                       MUL  BL                   ; (y-1)*160 Elso tag
+                       MOV  DI, AX               ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX
+                       MOV  DL, x
+                       MOV  AL, DL
+                       DEC  AL                   ; x-1
+                       SHL  AL, 1                ; 2(x-1) Masodik tag
+                       ADD  DI, AX               ; DI = DI + AL
+
+                       MOV  AL, ' '              ; Karakter az also 4 bithelyre
+                       MOV  AH, attr             ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX          ; Kepernyo memoriara iras
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_side ENDP
 
 read_char PROC
                        PUSH AX

@@ -1,22 +1,130 @@
 .MODEL SMALL
 .STACK
 .DATA?
-    ; Ide kerulnek a kezdeti ertek nelkuli valtozok
-    ; Pl: adat DB 10 DUP(?)
+    char  db 2 DUP(?)
 .DATA
-    ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
-    ; Pl: adat DB 'Hello World$'
+    x    db 1
+    y    db 1
+   
 .CODE
-
+    
 main proc
                        MOV  AX, DGROUP
                        MOV  DS, AX
+    ;CALL read_char
+                       MOV  char, 178
                        CALL cls
                        CALL set_videomode
+                       CALL clear_screen
 
+    lp1:               
+                       CALL draw_side
+                       CMP  x, 80
+                       JE   exit1
+                       INC  x
+                       JMP  lp1
+    exit1:             
+                       MOV  x, 1
+                       MOV  y, 25
+    lp2:               
+                       CALL draw_side
+                       CMP  x, 80
+                       JE   exit2
+                       INC  x
+                       JMP  lp2
+    exit2:             
+                       mov  x,1
+                       mov  y,1
+    lp3:               
+                       CALL draw_side
+                       CMP  y, 24
+                       JE   exit3
+                       INC  y
+                       JMP  lp3
+    exit3:             
+                       mov  x,80
+                       mov  y,1
+    lp4:               
+                       CALL draw_side
+                       CMP  y, 24
+                       JE   exit4
+                       INC  y
+                       JMP  lp4
+    exit4:             
+                       CALL draw_symbol
+    exit:              
                        MOV  AH, 4Ch
                        INT  21h
 main endp
+
+draw_side PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX
+                       MOV  DL, y
+                       MOV  AL, DL
+                       DEC  AL                          ; y-1
+                       MOV  BL, 160
+                       MUL  BL                          ; (y-1)*160 Elso tag
+                       MOV  DI, AX                      ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX
+                       MOV  DL, x
+                       MOV  AL, DL
+                       DEC  AL                          ; x-1
+                       SHL  AL, 1                       ; 2(x-1) Masodik tag
+                       ADD  DI, AX                      ; DI = DI + AL
+
+                       MOV  AL, char                    ; Karakter az also 4 bithelyre
+                       MOV  AH, 128 * 0 + 16 * 0 + 4    ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX                 ; Kepernyo memoriara iras
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_side ENDP
+
+draw_symbol PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX
+                       MOV  DL, 12
+                       MOV  AL, DL
+                       DEC  AL                          ; y-1
+                       MOV  BL, 160
+                       MUL  BL                          ; (y-1)*160 Elso tag
+                       MOV  DI, AX                      ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX
+                       MOV  DL, 40
+                       MOV  AL, DL
+                       DEC  AL                          ; x-1
+                       SHL  AL, 1                       ; 2(x-1) Masodik tag
+                       ADD  DI, AX                      ; DI = DI + AL
+
+                       MOV  AL, char                    ; Karakter az also 4 bithelyre
+                       MOV  AH, 128 * 1 + 16 * 1 + 4    ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX                 ; Kepernyo memoriara iras
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_symbol ENDP
+
 
 read_char PROC
                        PUSH AX
@@ -177,18 +285,6 @@ upcase proc
                        RET
 upcase endp
 
-lowcase proc
-                       CMP  DL, 'Z'
-                       JG   exitlower
-                       CMP  DL, 'A'
-                       JL   exitlower
-                       JGE  convertLower2
-    convertLower2:     
-                       ADD  DL, 'a'-'A'
-    exitlower:         
-                       RET
-lowcase endp
-
 read_binary proc
                        PUSH AX
                        XOR  AX, AX
@@ -302,12 +398,12 @@ clear_screen PROC
                        PUSH CX
                        PUSH DX
                        XOR  AL, AL
-                       XOR  CX, CX               ;Bal felso sarok (CL = 0, CH = 0)
-                       MOV  DH, 24               ;49               ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
-                       MOV  DL, 79               ;Jobb oldali oszlop sorszama
-                       MOV  BH, 7                ;Torolt helyek attributuma
-                       MOV  AH, 6                ;Sorgorgetes felfele (Scroll-up) funkcio
-                       INT  10h                  ;Kepernyo torlese
+                       XOR  CX, CX                      ;Bal felso sarok (CL = 0, CH = 0)
+                       MOV  DH, 24                      ;49                      ;50 soros kepernyo also sora (25 sorosnál ide 24 kell)
+                       MOV  DL, 79                      ;Jobb oldali oszlop sorszama
+                       MOV  BH, 16*1                    ;Torolt helyek attributuma
+                       MOV  AH, 6                       ;Sorgorgetes felfele (Scroll-up) funkcio
+                       INT  10h                         ;Kepernyo torlese
                        POP  DX
                        POP  CX
                        POP  BX

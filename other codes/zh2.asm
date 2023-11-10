@@ -1,18 +1,35 @@
 .MODEL SMALL
 .STACK
-.DATA?
-    ; Ide kerulnek a kezdeti ertek nelkuli valtozok
-    ; Pl: adat DB 10 DUP(?)
 .DATA
-    ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
-    ; Pl: adat DB 'Hello World$'
+    kerdes DB 'Kerek egy szamot 0-9 kozott: ', 0
+    valasz DB 'A harom szam szorzata: ', 0
 .CODE
-
+    ; Olvasson be 3 db bajtos erteket, szorozza ossze azokat, majd eredmenyt irja ki a kepernyore.
+    ; A beolvasas elott irja ki milyen adatot var a felhasznalotol, es az eredmenyt
 main proc
                        MOV  AX, DGROUP
                        MOV  DS, AX
                        CALL cls
-                       CALL set_videomode
+
+    ; Harom darab bajtos ertek bekerese ciklus segitsegevel
+                       XOR  AX, AX
+                       XOR  DX, DX
+
+                       MOV  AL, 1                ; 1 kezdoertek
+
+    ; 10-es szamrendszerbeli szamokat fogunk bekerni
+                       MOV  CX, 3                ; 3 szam bekerese
+    cikl:              
+                       LEA  BX, kerdes           ; Szoveg beallitasa
+                       CALL write_string         ; A kerdes kiiratasa
+                       CALL read_decimal         ; Az adott szam bekerese
+                       MUL  DL                   ; Szorzas
+                       LOOP cikl                 ; Ciklus
+
+                       LEA  BX, valasz           ; Szoveg beallitasa
+                       CALL write_string         ; Valasz szoveg kiiratasa
+                       MOV  DL,AL                ; Eredmeny eltarolasa
+                       CALL write_decimal        ; Eredmeny kiiratasa
 
                        MOV  AH, 4Ch
                        INT  21h

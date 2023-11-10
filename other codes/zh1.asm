@@ -1,22 +1,103 @@
 .MODEL SMALL
 .STACK
 .DATA?
-    ; Ide kerulnek a kezdeti ertek nelkuli valtozok
-    ; Pl: adat DB 10 DUP(?)
+    szoveg DB 100 DUP(?)    ; Tetszoleges szoveget itt tarolom
 .DATA
-    ; Ide kerulnek a kezdeti ertekkel rendelkezo valtozok
-    ; Pl: adat DB 'Hello World$'
+    kerdes1 DB 'Kerem az elso (x) koordinatat: ', 0
+    kerdes2 DB 'Kerem a masodik (y) koordinatat: ', 0
+    kerdes3 DB 'Kerem a tetszoleges szoveget: ', 0
+    x       DB 1
+    y       DB 1
+    attr    DB 128 * 0 + 16 * 0 + 4                      ; Fekete hatter, piros szin attributum
+    tmp     DB ' '                                       ; Itt tarolom az eppen kiirando karaktert
 .CODE
-
+    ; Olvasson be ket egesz szamot es egy tetszoleges szoveget
+    ; A megadott x, y irja ki a szoveget vizszintesen ugy, hogy nagybetu->kisbetu alakitja
+    ; Beolvasas alatt kerdesek kiiratasa
+    ; Attributum tetszoleges lehet
 main proc
                        MOV  AX, DGROUP
                        MOV  DS, AX
                        CALL cls
+
+    ; Ket egesz szam beolvasasa
+                       LEA  BX, kerdes1
+                       CALL write_string
+                       CALL read_decimal
+                       MOV  x, DL
+
+                       LEA  BX, kerdes2
+                       CALL write_string
+                       CALL read_decimal
+                       MOV  y, DL
+    ; Tetszoleges szoveg bekerese
+                       LEA  BX, kerdes3
+                       CALL write_string
+                       LEA  BX, szoveg
+                       CALL read_string
+    ; Amiutan bekertuk az adatokat toroljuk a kepernyot
+                       CALL cls
+    ; Kepernyo beallitasa
                        CALL set_videomode
+    ; Kiiratas a kepernyore a videomemoria segitsegevel
+    ; Tetszoleges attributum lehet
+                       LEA  BX, szoveg
+    write_str_new2:    
+                       MOV  DL, [BX]
+                       OR   DL, DL
+                       JZ   write_str_end2
+                       CALL lowcase              ; Kisbetuve alakitja
+                       
+                       MOV  tmp, DL              ; Aktualis karakter eltarolasa a kiiratas vegett
+                       CALL draw_side            ; Kiiratas (x,y) pozicioban
+
+                       INC  BX                   ; Kovetkezo karakter
+                       INC  x                    ; Vizszintesen jobbra megyunk
+                       JMP  write_str_new2
+    write_str_end2:    
 
                        MOV  AH, 4Ch
                        INT  21h
 main endp
+
+    ; Ez egy seged szubrutin, amely segitsegevel adott (x,y) koordinatara tudunk irni a kepernyore
+draw_side PROC
+                       PUSH AX
+                       PUSH BX
+                       PUSH DX
+                       PUSH DI
+    ; Pozicio keplet
+    ; 2[(y-1)*80 + (x-1)] = 160(y-1) + 2(x-1)
+                       XOR  AX, AX               ; AX torlese
+                       MOV  DL, y
+
+                       MOV  AL, DL
+                       DEC  AL                   ; y-1
+                       MOV  BL, 160
+                       MUL  BL                   ; (y-1)*160 Elso tag
+                       MOV  DI, AX               ; Elso tag eltarolasa a DI-ba
+
+                       XOR  AX, AX               ; AX torlese
+                       MOV  DL, x
+
+                       MOV  AL, DL
+                       DEC  AL                   ; x-1
+                       SHL  AL, 1                ; 2(x-1) Masodik tag
+                       ADD  DI, AX               ; DI = DI + AL
+
+                       MOV  AL, tmp              ; Karakter az also 4 bithelyre
+                       MOV  AH, attr             ; Attributum a felso 4 bithelyre
+
+                       MOV  ES:[DI], AX          ; Kepernyo memoriara iras
+
+                       INC  CH
+
+                       POP  DI
+                       POP  DX
+                       POP  BX
+                       POP  AX
+                       RET
+draw_side ENDP
 
 read_char PROC
                        PUSH AX
@@ -177,6 +258,7 @@ upcase proc
                        RET
 upcase endp
 
+    ; Ez alakitja a DL-ben levo betut kisbetuve
 lowcase proc
                        CMP  DL, 'Z'
                        JG   exitlower
